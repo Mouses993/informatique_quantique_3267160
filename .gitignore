@@ -5,3 +5,4 @@ npm-debug.log
 
 # rendus intermédiaires de l'intro
 out/
+intro-egep/*.zip
