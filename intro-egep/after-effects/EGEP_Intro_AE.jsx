@@ -244,7 +244,12 @@
     '} else value;';
   var tx = 452 + 300 + 80;
   rise(text(comp, 'JT SPÉCIAL', F_BLACK, 230, CREAM, tx, 520, 16.5, DUR, { name: 'JT SPÉCIAL (carton)', tracking: 10 }), 16.55, 0.45, 260);
-  tricolor(comp, tx, 548, 900, 14, 16.9, DUR, 16.9);
+  var gl = comp.layers.addShape(); gl.name = 'Trait or';
+  rect(gl.property('ADBE Root Vectors Group'), 'Trait', 900, 14, 0, 0, GOLD);
+  var glt = gl.property('ADBE Transform Group');
+  glt.property('ADBE Anchor Point').setValue([0, 0]); glt.property('ADBE Position').setValue([tx, 548]);
+  keys(glt.property('ADBE Scale'), [[16.9, [0, 100]], [17.4, [100, 100]]]);
+  gl.inPoint = 16.9; gl.outPoint = DUR;
   rise(text(comp, 'ÉTATS GÉNÉRAUX DE L’ÉLEVAGE ET DE LA PÊCHE', F_BOLD, 60, GOLD, tx, 630, 17, DUR, { tracking: 30 }), 17, 0.5, 70);
   var mali = text(comp, 'MALI · 2026', F_UI, 32, CREAM, tx, 694, 17.3, DUR, { tracking: 320 });
   keys(mali.property('ADBE Transform Group').property('ADBE Opacity'), [[17.3, 0], [17.65, 100]]);

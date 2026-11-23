@@ -691,7 +691,8 @@ function sceneLogo(ctx, u) {
   const sE = Math.min(64, (wJ / textW(ctx, ev, 100, 700, D, 0.03)) * 100);
   const y1 = 520;
   rise(ctx, TXT.tag, tx, y1, sJ, 900, D, C.cream, u, 33.1, { track: 0.01, stagger: 0.035, cfg: SPRING.bouncy });
-  tricolor(ctx, tx, y1 + 28, wJ, 14, E.outQuint(prog(u, 33.8, 34.6)));
+  const gk = E.outQuint(prog(u, 33.8, 34.6));   // trait or (à la place du filet tricolore)
+  if (gk > 0) { ctx.fillStyle = C.gold; ctx.fillRect(tx, y1 + 28, wJ * gk, 14); }
   const y2 = y1 + 28 + 14 + 26 + sE * 0.72;
   rise(ctx, ev, tx, y2, sE, 700, D, C.gold, u, 34.0, { track: 0.03, stagger: 0.006 });
   const k3 = E.outCubic(prog(u, 34.6, 35.3));
