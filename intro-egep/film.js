@@ -11,6 +11,8 @@ import { drawEmblem, COL } from './lib/emblem.js';
 const { W, H, E, prog, lerp, clamp, springU, SPRING, font, layout, fill, cover, noise1, hash01, mix, TAU, kf, bump } = M;
 
 // ------------------------------------------------------------------ textes (modifiables ici)
+const SHOW_NAMES = false;   // noms / titres des autorités à l'écran (désactivé à la demande)
+const SHOW_DATE = false;    // bandeau de date pendant le montage
 const TXT = {
   tag: 'JT SPÉCIAL',
   peche: 'PÊCHE',
@@ -45,9 +47,7 @@ const HITS = [
   [8, 'PÊCHE', 'thud', { pitch: 140 }],
   [10.9, 'tilt vers les zébus', 'whoosh', { len: 0.45, from: 2600, to: 500 }],
   [12, 'ÉLEVAGE', 'thud', { pitch: 120 }],
-  [16.6, 'nom du Président', 'tick'],
   [21.9, 'push vers le Ministre', 'whoosh', { len: 0.45, pan: 0.3 }],
-  [22.6, 'nom du Ministre', 'tick'],
   [28, 'coupe filet', 'click'],
   [29, 'coupe poisson', 'click'],
   [30, 'coupe pirogues', 'click'],
@@ -375,8 +375,9 @@ function photo(ctx, img, u, u0, u1, { fx = 0.5, fy = 0.45, z0 = 1.0, z1 = 1.08 }
   ctx.globalCompositeOperation = 'soft-light';
   ctx.fillStyle = 'rgba(232,134,42,0.35)'; ctx.fillRect(0, 0, W, H);
   ctx.restore();
-  const g = ctx.createLinearGradient(0, H * 0.45, 0, H);
-  g.addColorStop(0, 'rgba(10,28,40,0)'); g.addColorStop(1, 'rgba(10,28,40,0.85)');
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, 'rgba(10,28,40,0.75)'); g.addColorStop(0.38, 'rgba(10,28,40,0.1)');
+  g.addColorStop(0.6, 'rgba(10,28,40,0.1)'); g.addColorStop(1, 'rgba(10,28,40,0.85)');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 }
 function vignette(ctx, k = 0.55) {
@@ -537,8 +538,9 @@ function scenePortrait(ctx, u, u0, IMG, who) {
   const T = TXT[who];
   const img = IMG[who === 'pres' ? 'president' : 'ministre'];
   portraitBg(ctx, u, side);
-  const pw = 600, ph = 780, py = 150;
-  const px = side < 0 ? 200 : W - 200 - pw;
+  const ph = SHOW_NAMES ? 780 : 860, py = SHOW_NAMES ? 150 : 100;
+  const pw = SHOW_NAMES || !img ? (SHOW_NAMES ? 600 : 680) : clamp(ph * img.width / img.height, 600, 1400);
+  const px = SHOW_NAMES ? (side < 0 ? 200 : W - 200 - pw) : (W - pw) / 2 + side * 0;
   // le cadre se dévoile de bas en haut
   const k = springU(u, u0 - 0.4, SPRING.snappy);
   const rev = clamp(k);
@@ -547,7 +549,7 @@ function scenePortrait(ctx, u, u0, IMG, who) {
   ctx.translate(0, (1 - k) * 60);
   if (img) {
     const pz = 1.02 * (1.08 / 1.02) ** prog(u, u0, u0 + 6);
-    cover(ctx, img, px, py, pw, ph, { fx: 0.5, fy: 0.3, zoom: pz });
+    cover(ctx, img, px, py, pw, ph, who === 'pres' ? { fx: 0.5, fy: 0.12, zoom: pz } : { fx: 0.46, fy: 0.25, zoom: pz });
   } else placeholderPortrait(ctx, px, py, pw, ph, `assets/photos/${who === 'pres' ? 'president' : 'ministre'}.jpg`);
   ctx.restore();
   // filet or sur le bord intérieur du cadre
@@ -556,6 +558,7 @@ function scenePortrait(ctx, u, u0, IMG, who) {
   const bx = side < 0 ? px + pw : px - 14;
   ctx.fillRect(bx, py + ph - ph * barK, 14, ph * barK);
   // bloc texte
+  if (!SHOW_NAMES) return;
   const tx = side < 0 ? px + pw + 90 : 120;
   if (T.grade) rise(ctx, T.grade.toUpperCase(), tx, 420, 64, 600, D, C.gold, u, u0 + 0.35, { track: 0.06, stagger: 0.02 });
   const nameSize = who === 'pres' ? 210 : 250;
@@ -732,6 +735,6 @@ M.film({
     else if (u < 28) scenePortrait(ctx, u, 22, IMG, 'min');
     else if (u < 31) montage(ctx, u, IMG);
     else sceneLogo(ctx, u);
-    if (u >= 27.8 && u < 31.05) dateCard(ctx, u);
+    if (SHOW_DATE && u >= 27.8 && u < 31.05) dateCard(ctx, u);
   },
 });
