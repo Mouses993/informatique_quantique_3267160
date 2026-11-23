@@ -1,0 +1,21 @@
+PROJET AFTER EFFECTS – JT SPÉCIAL « ÉTATS GÉNÉRAUX DE L'ÉLEVAGE ET DE LA PÊCHE »
+
+1. Installer les polices du dossier « Polices » (double-clic > Installer) :
+   Barlow Condensed Bold / ExtraBold / Black, Inter Medium / SemiBold. Redémarrer After Effects.
+2. Dans After Effects : Fichier > Scripts > Exécuter le fichier de script… > EGEP_Intro_AE.jsx
+   (garder le dossier « Footage » à côté du script).
+3. Le script construit le projet. Enregistrer ensuite en .aep (Fichier > Enregistrer sous).
+
+Compositions (1920x1080, 25 i/s) :
+  01_INTRO_EGEP          intro 20 s : montage photo, Ministre (8 s) puis Président (11 s), carton logo, musique
+                         Calque « RÉFÉRENCE » désactivé = le rendu original, pour comparer.
+  02_BANDEAU_Ministre    bandeau d'identification 6 s, fond transparent
+  03_BANDEAU_President
+  04_BANDEAU_Modele      dupliquer (Ctrl+D) et changer les textes NOM et FONCTION :
+                         les barres s'ajustent automatiquement à la longueur du texte.
+
+Tout est modifiable : remplacer une photo = Alt+glisser la nouvelle image sur le calque dans la timeline.
+Rendu diffusion conseillé : H.264 ou ProRes 422 HQ, 25 i/s, son -23 LUFS (déjà le cas du fichier audio fourni).
+
+Note : l'emblème du carton est une image fixe (embleme.png) ; dans le rendu original, les vagues et le poisson
+s'animent en plus. Logo vectoriel complet (SVG) dans le dossier « logo » du livrable principal.
