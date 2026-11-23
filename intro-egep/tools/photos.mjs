@@ -1,11 +1,11 @@
 // Recense les vraies photos déposées dans assets/photos/ et écrit manifest.json pour le film.
 //   cd intro-egep/tools && node photos.mjs
 // Noms reconnus (jpg, jpeg, png ou webp) :
-//   aube  epervier  zebus  president  ministre  m1  m2  m3
+//   president  ministre  g01 … g20 (galerie, dans l'ordre d'apparition voulu)
 import fs from 'node:fs';
 import path from 'node:path';
 const DIR = path.resolve('../assets/photos');
-const KEYS = ['aube', 'epervier', 'zebus', 'president', 'ministre', 'm1', 'm2', 'm3'];
+const KEYS = ['president', 'ministre', ...Array.from({ length: 20 }, (_, i) => 'g' + String(i + 1).padStart(2, '0'))];
 const files = fs.readdirSync(DIR);
 const manifest = {};
 for (const k of KEYS) {

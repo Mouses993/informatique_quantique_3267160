@@ -40,21 +40,27 @@ const C = {
 const D = 'Display', UI = 'UI';
 
 // ------------------------------------------------------------------ sons (sfx.mjs)
+const CUTS = [0, 2, 4, 6, 8, 12, 16, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30, 31];
 const HITS = [
-  [1.5, 'JT SPÉCIAL', 'click'],
-  [5.9, 'whip vers épervier', 'whoosh', { len: 0.45 }],
-  [7.9, 'lancer de l’épervier', 'whoosh', { len: 0.35, from: 500, to: 3200, pan: -0.3 }],
+  ...CUTS.filter((b) => ![0, 8, 12, 16, 22].includes(b)).map((b) => [b, 'coupe', 'click']),
+  [1, 'JT SPÉCIAL', 'thud', { pitch: 150 }],
+  [7.9, 'vers PÊCHE', 'whoosh', { len: 0.35, from: 500, to: 3200 }],
   [8, 'PÊCHE', 'thud', { pitch: 140 }],
-  [10.9, 'tilt vers les zébus', 'whoosh', { len: 0.45, from: 2600, to: 500 }],
+  [11.9, 'vers ÉLEVAGE', 'whoosh', { len: 0.35, from: 2600, to: 500 }],
   [12, 'ÉLEVAGE', 'thud', { pitch: 120 }],
-  [21.9, 'push vers le Ministre', 'whoosh', { len: 0.45, pan: 0.3 }],
-  [28, 'coupe filet', 'click'],
-  [29, 'coupe poisson', 'click'],
-  [30, 'coupe pirogues', 'click'],
-  [31, 'coupe cornes', 'click'],
   [32, 'logo', 'swell', { len: 1.2 }],
-  [33.1, 'titre', 'whoosh', { len: 0.4, from: 3000, to: 800 }],
+  [33.1, 'JT SPÉCIAL', 'thud', { pitch: 110 }],
   [34.6, 'tricolore', 'bell', { pitch: 'D6' }],
+];
+// Galerie : [temps de coupe, photo]. Coupes sur les temps ; les autorités en apparitions brèves (2 temps = 1 s).
+const SEQ = [
+  [0, 'g05'], [2, 'g02'], [4, 'g03'], [6, 'g04'],
+  [8, 'g01'], [12, 'g06'],
+  [16, 'PRES'],
+  [18, 'g07'], [19, 'g04'], [20, 'g03'], [21, 'g05'],
+  [22, 'MIN'],
+  [24, 'g01'], [25, 'g06'], [26, 'g02'], [27, 'g07'], [28, 'g05'], [29, 'g04'], [30, 'g03'],
+  [31, 'LOGO'],
 ];
 
 // ------------------------------------------------------------------ outils
@@ -368,9 +374,9 @@ function fishSil(ctx, x, y, s, rot, color = C.sil) {
 
 // ------------------------------------------------------------------ photo (remplace l'illustration)
 // étalonnage chaud + poussée lente + dégradé bas pour la lisibilité des textes
-function photo(ctx, img, u, u0, u1, { fx = 0.5, fy = 0.45, z0 = 1.0, z1 = 1.08 } = {}) {
+function photo(ctx, img, u, u0, u1, { fx = 0.5, fx1 = null, fy = 0.45, z0 = 1.0, z1 = 1.08, punch = 1 } = {}) {
   const p = prog(u, u0, u1);
-  cover(ctx, img, 0, 0, W, H, { fx, fy, zoom: z0 * (z1 / z0) ** p });
+  cover(ctx, img, 0, 0, W, H, { fx: lerp(fx, fx1 ?? fx, E.inOutSine(p)), fy, zoom: z0 * (z1 / z0) ** p * punch });
   ctx.save();
   ctx.globalCompositeOperation = 'soft-light';
   ctx.fillStyle = 'rgba(232,134,42,0.35)'; ctx.fillRect(0, 0, W, H);
@@ -677,28 +683,19 @@ function sceneLogo(ctx, u) {
   };
   drawEmblem(ctx, cx, cy, size, p, { flow: (u - 32) * 20 });
 
-  // titre : même composition que le logo horizontal
+  // titre : JT SPÉCIAL en grand, le nom de l'événement en dessous, plus petit
   const tx = fin.x + fin.size / 2 + 80;
-  const s1 = 150;
-  const w1 = textW(ctx, TXT.l1, s1, 800, D, 0.005);
-  const s2 = (w1 / textW(ctx, TXT.l2, 100, 700, D, 0.04)) * 100;
-  const blockTop = 540 - 150;
-  const y1 = blockTop + 100 + s1 * 0.7;
-  rise(ctx, TXT.l1, tx, y1, s1, 800, D, C.cream, u, 33.1, { track: 0.005, stagger: 0.025, cfg: SPRING.snappy });
-  const y2 = y1 + 18 + s2 * 0.7;
-  rise(ctx, TXT.l2, tx, y2, s2, 700, D, C.cream, u, 33.55, { track: 0.04, stagger: 0.012 });
-  tricolor(ctx, tx, y2 + 22, w1, 12, E.outQuint(prog(u, 34.2, 35.0)));
+  const sJ = 230;
+  const wJ = textW(ctx, TXT.tag, sJ, 900, D, 0.01);
+  const ev = `${TXT.l1} ${TXT.l2}`;
+  const sE = Math.min(64, (wJ / textW(ctx, ev, 100, 700, D, 0.03)) * 100);
+  const y1 = 520;
+  rise(ctx, TXT.tag, tx, y1, sJ, 900, D, C.cream, u, 33.1, { track: 0.01, stagger: 0.035, cfg: SPRING.bouncy });
+  tricolor(ctx, tx, y1 + 28, wJ, 14, E.outQuint(prog(u, 33.8, 34.6)));
+  const y2 = y1 + 28 + 14 + 26 + sE * 0.72;
+  rise(ctx, ev, tx, y2, sE, 700, D, C.gold, u, 34.0, { track: 0.03, stagger: 0.006 });
   const k3 = E.outCubic(prog(u, 34.6, 35.3));
-  if (k3 > 0) txt(ctx, TXT.l3, tx, y2 + 22 + 12 + 52 + (1 - k3) * 20, 34, 600, UI, C.cream, { track: 0.32, alpha: k3 });
-  // étiquette JT SPÉCIAL
-  const kt = springU(u, 34.9, SPRING.bouncy);
-  if (kt > 0) {
-    const lw = textW(ctx, TXT.tag, 46, 800, D, 0.06) + 40;
-    ctx.save(); ctx.translate(tx, blockTop + 20); ctx.scale(clamp(kt, 0, 1.2), 1);
-    ctx.fillStyle = C.gold; ctx.fillRect(0, 0, lw, 62);
-    ctx.restore();
-    if (kt > 0.6) txt(ctx, TXT.tag, tx + 20, blockTop + 20 + 47, 46, 800, D, C.ink, { track: 0.06, alpha: clamp((kt - 0.6) / 0.3) });
-  }
+  if (k3 > 0) txt(ctx, TXT.l3, tx, y2 + 64 + (1 - k3) * 20, 32, 600, UI, C.cream, { track: 0.32, alpha: k3 });
   vignette(ctx, 0.35);
 }
 
@@ -712,7 +709,7 @@ function whip(ctx, u, u1, dur, dx, dy, a, b) {
 
 // ------------------------------------------------------------------ le film
 let MANIFEST = {};
-const PHOTO_KEYS = ['aube', 'epervier', 'zebus', 'president', 'ministre', 'm1', 'm2', 'm3'];
+const PHOTO_KEYS = ['president', 'ministre', ...Array.from({ length: 20 }, (_, i) => 'g' + String(i + 1).padStart(2, '0'))];
 try {
   MANIFEST = await fetch('assets/photos/manifest.json').then((r) => (r.ok ? r.json() : {}));
 } catch { MANIFEST = {}; }
@@ -723,18 +720,35 @@ M.film({
   fonts: [font(100, 600, D), font(100, 700, D), font(100, 800, D), font(100, 900, D), font(40, 500, UI), font(40, 600, UI), font(40, 700, UI)],
   images,
   hits: HITS,
-  samples: (t) => (t > 8.2 && t < 10.8) || t > 16.6 ? 8 : 14,
+  samples: 10,
   draw(ctx, u, t, IMG) {
-    if (u < 5.5) sceneAube(ctx, u, IMG);
-    else if (u < 6) whip(ctx, u, 6, 0.5, 1, 0, () => sceneAube(ctx, u, IMG), () => sceneEpervier(ctx, u, IMG));
-    else if (u < 10.55) sceneEpervier(ctx, u, IMG);
-    else if (u < 11) whip(ctx, u, 11, 0.45, 0, -1, () => sceneEpervier(ctx, u, IMG), () => sceneZebus(ctx, u, IMG));
-    else if (u < 16) sceneZebus(ctx, u, IMG);
-    else if (u < 21.5) scenePortrait(ctx, u, 16, IMG, 'pres');
-    else if (u < 22) whip(ctx, u, 22, 0.5, 1, 0, () => scenePortrait(ctx, u, 16, IMG, 'pres'), () => scenePortrait(ctx, u, 22, IMG, 'min'));
-    else if (u < 28) scenePortrait(ctx, u, 22, IMG, 'min');
-    else if (u < 31) montage(ctx, u, IMG);
-    else sceneLogo(ctx, u);
-    if (SHOW_DATE && u >= 27.8 && u < 31.05) dateCard(ctx, u);
+    let i = 0;
+    while (i + 1 < SEQ.length && u >= SEQ[i + 1][0]) i++;
+    const [u0, key] = SEQ[i];
+    const u1 = i + 1 < SEQ.length ? SEQ[i + 1][0] : 40;
+    if (key === 'LOGO') { sceneLogo(ctx, u); return; }
+    if (key === 'PRES' || key === 'MIN') { scenePortrait(ctx, u, u0 + 0.25, IMG, key === 'PRES' ? 'pres' : 'min'); return; }
+    const img = IMG[key];
+    if (!img) fill(ctx, C.ink);
+    else {
+      const inward = i % 2 === 0;
+      const punch = 1 + 0.07 * (1 - clamp(springU(u, u0, SPRING.snappy)));
+      photo(ctx, img, u, u0, u1 + 0.5, {
+        fx: inward ? 0.38 : 0.62, fx1: inward ? 0.6 : 0.4, fy: 0.5,
+        z0: inward ? 1.04 : 1.16, z1: inward ? 1.16 : 1.04, punch,
+      });
+    }
+    vignette(ctx, 0.4);
+    // JT SPÉCIAL sur le montage d'ouverture
+    if (u < 8) {
+      const out = E.inCubic(prog(u, 7.55, 7.95));
+      ctx.save(); ctx.translate(0, out * 300);
+      const wJ = textW(ctx, TXT.tag, 230, 900, D, 0.01);
+      tricolor(ctx, 96, 990, wJ, 14, E.outQuint(prog(u, 1.4, 2.4)));
+      rise(ctx, TXT.tag, 90, 960, 230, 900, D, C.cream, u, 0.9, { track: 0.01, stagger: 0.04, cfg: SPRING.bouncy });
+      ctx.restore();
+    }
+    if (u >= 8 && u < 12) rise(ctx, TXT.peche, 90, 1010, 330, 900, D, C.cream, u, 8.0, { track: 0.01, stagger: 0.05, cfg: SPRING.bouncy });
+    if (u >= 12 && u < 16) rise(ctx, TXT.elevage, W - 90, 300, 300, 900, D, C.cream, u, 12.0, { track: 0.01, stagger: 0.045, align: 'right', cfg: SPRING.bouncy });
   },
 });
